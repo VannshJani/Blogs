@@ -130,7 +130,7 @@ Hence, we follow the top-bottom approach, where we add '0' to the left subset an
 
 # Visualizing the Binary Tree
 
-![](images/binary_tree.png)
+![](images/binary_tree 2.png)
 
 # Results and Observations
 
