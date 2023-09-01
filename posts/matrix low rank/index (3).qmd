@@ -1,0 +1,121 @@
+---
+title: "Matrix transformations and Low-rank matrices"
+description: "Understanding matrix transformations as pre-multiplying a vector with a matrix and interpreting matrix transformations using low-rank matrices."
+author: "Vannsh Jani"
+date: "07/31/2023"
+draft: false
+---
+
+# Matrix Transformations
+
+| Matrix transformation or linear transformation of a vector v is pre-multiplying the vector by a matrix (called the transformation matrix) which results in v being transformed.
+
+| Let us first interpret matrix transformations in the 2D space.
+
+```{python}
+from sympy import Matrix, MatrixSymbol, Eq, MatMul
+
+sympy_v = MatrixSymbol("v",2,1) # Column vector having 2 rows
+sympy_A = MatrixSymbol("A",2,2) # 2x2 Transformation matrix
+sympy_y = MatrixSymbol("y", 2, 1)
+print("y is the transformed vector.")
+Eq(sympy_y,sympy_A*sympy_v,evaluate=False)
+
+```
+
+### Example
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[3,3],[2,6]])
+v = np.array([1,1])
+Av = A @ v
+plt.arrow(0,0,1,1,head_width=0.2,width=0.05,color="blue",label="v")
+plt.arrow(0,0,Av[0],Av[1],head_width=0.2,width=0.05,color='red',label="Av")
+plt.legend([f"v = {v}",f"Av = {Av}"],loc='lower right')
+plt.title(f"A = {A}")
+plt.show()
+```
+
+```{python}
+Eq(Matrix(Av),MatMul(Matrix(A),Matrix(v)),evaluate=False)
+```
+
+In the above equation,
+
+A = $\begin{bmatrix} 3&3\\2&6\end{bmatrix}$, v = $\begin{bmatrix} 1\\1 \end{bmatrix}$ and y = $\begin{bmatrix} 6\\8 \end{bmatrix}$
+
+#### 
+
+#### [Note:]{.underline}
+
+#### If the transformation matrix A is taken to be $\begin{bmatrix} \cos(\theta)&-\sin(\theta)\\ \sin(\theta)&\cos(\theta) \end{bmatrix}$
+
+#### then the vector v is rotated in an anti-clockwise direction by an angle $\theta$.
+
+For example, Let's take v = $\begin{bmatrix} 1\\0 \end{bmatrix}$ and $\theta$=90 deg, therefore A = $\begin{bmatrix} 0&-1\\1&0 \end{bmatrix}$
+
+```{python}
+
+A = np.array([[0,-1],[1,0]])
+v = np.array([1,0])
+Av = A @ v
+plt.figure()
+plt.arrow(0,0,1,0,head_width=0.1,width=0.01,color="blue",label="v")
+plt.arrow(0,0,Av[0],Av[1],head_width=0.1,width=0.01,color='red',label="Av")
+plt.legend([f"v = {v}",f"Av = {Av}"])
+plt.title(f"A = {A}")
+plt.show()
+```
+
+```{python}
+Eq(Matrix(Av),MatMul(Matrix(A),Matrix(v)),evaluate=False)
+```
+
+As a result of the transformation, vector v is rotated by 90 degrees in the counter-clockwise direction.
+
+# Understanding Matrix transformations of low-rank matrices
+
+Low-rank matrices are matrices which have rank less than the dimensionality of the column space of the matrix. For eg. a 3x3 transformation matrix will be a low rank matrix if it's column space can be spanned by less than or equal to 2 vectors. In other words, the column vectors are linearly dependant.
+
+Example of a low-rank matrix is $\begin{bmatrix} 1&0&1\\0.5&1&1.5\\1&0&1 \end{bmatrix}$
+
+The determinant of the transformation matrix having low-rank is **zero.**
+
+Geometrically what this means is transforming the vector using a low-rank matrix results in the subspace of the original vector space. Hence for example if the original vector space is $R^3$, the resultant subspace can be $R^2$, $R$, or in an extreme case even a point.
+
+### Example
+
+```{python}
+
+
+A = np.array([[1,-1],[3,-3]]) # Low-rank 2x2 matrix
+# Example 1
+v = np.array([2,3])
+Av = A @ v
+plt.figure()
+plt.subplot(1,2,1)
+plt.arrow(0,0,2,3,head_width=0.1,width=0.01,color="blue",label="v")
+plt.arrow(0,0,Av[0],Av[1],head_width=0.1,width=0.01,color='red',label="Av")
+plt.title(f"A = {A}")
+x = np.linspace(-3,3)
+y = x*3
+plt.plot(x,y,color="black",alpha=0.3)
+plt.legend([f"v = {v}",f"Av = {Av}","y=3x"])
+
+# Example 2
+v1 = np.array([-1.7,2.2])
+plt.subplot(1,2,2)
+plt.arrow(0,0,-1.7,2.2,head_width=0.1,width=0.01,color="blue",label="v")
+plt.arrow(0,0,Av[0],Av[1],head_width=0.1,width=0.01,color='red',label="Av")
+plt.title(f"A = {A}")
+x = np.linspace(-3,3)
+y = x*3
+plt.plot(x,y,color="black",alpha=0.3)
+plt.legend([f"v = {v}",f"Av = {Av}","y=3x"])
+plt.show()
+```
+
+In the above plots, Av (transformed vector) lies on the line $y=3x$, and does not depend on the coordinates of vector v. As a result, using a low-rank matrix to transform a vector results only in the subspace of the original vector space. Here the subspace is the line $y=3x$ and the original vector space is $R^2$.

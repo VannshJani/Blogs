@@ -1,0 +1,134 @@
+---
+title: "Markov Chains"
+description: "Understanding Markov chains."
+author: "Vannsh Jani"
+date: "08/27/2023"
+draft: false
+---
+
+# What are Markov models?
+
+Markov models are mathematical models which are used to model sequential data, where the current observation is dependant on the past observations. Markov chains are the simplest markov models wherein, the current observation is only dependant on the previous observation and not dependant on observations prior to previous observations.
+
+This can be represented by,
+
+$$
+P(x_t|x_1,x_2,...x_{t-1})=P(x_t|x_{t-1})
+$$
+
+Following is how we can represent the dependencies in data
+
+```{python}
+import schemdraw
+from schemdraw import flow
+import schemdraw.elements as elm
+
+with schemdraw.Drawing() as dwg:
+    dwg += (start := flow.Circle().label('$x_1$').fill('lightblue'))
+    dwg += (flow.Arrow(l=1.5))
+    dwg += (b := flow.Circle().at((3, 0)).label('$x_2$').fill('lightblue'))
+    dwg += (flow.Arrow(l=1.5))
+    dwg += (c := flow.Circle().at((6, 0)).label('$x_3$').fill('lightblue'))
+    dwg += (flow.Circle(r=0.05).at((7.56,0)).fill("black"))
+    dwg += (flow.Circle(r=0.05).at((7.76,0)).fill("black"))
+    dwg += (flow.Circle(r=0.05).at((7.96,0)).fill("black"))
+    dwg += (flow.Arrow(l=1.5))
+    dwg += (c := flow.Circle().at((9.6, 0)).label('$x_n$').fill('lightblue'))
+
+
+
+```
+
+We can can calculate probability of a sequence as follows,
+
+$$
+P(x_1,x_2,..x_n)=P(x_1)P(x_2|x_1)P(x_3|x_2)...P(x_n|x_{n-1})
+$$
+
+What this basically says is, The probability of any observation $x_i$, is only dependant on $x_{i-1} \quad \forall \quad i \in [2,n]$.
+
+$P(x_1)$, is called the prior probability for the state/observation initially. The prior probability is the probability for starting from one of the states. It is denoted by $\pi_i=P(x_1=i)$, where $i$ denotes the initial state from all possible states. The prior probability is one of the parameters of the Markov chain model.
+
+Another parameter for the Markov chain model is the transition matrix denoted by $A$. If there are $K$ states, the transition matrix will be a $K$x$K$ matrix, where $A_{ij}=P(x_t=j|x_{t-1}=i)$.
+
+Let's take an example for 3 states.
+
+We can use the markov chain model to predict which city we will go to next, given the city we are in currently.
+
+Let's assume the 3 cities/states to be Bangalore, Chennai and Mumbai and following is the transition matrix for this example.
+
+|               | Bangalore | Chennai | Mumbai |
+|:-------------:|:---------:|:-------:|:------:|
+| **Bangalore** |    0.3    |   0.4   |  0.3   |
+|  **Chennai**  |    0.2    |   0.1   |  0.7   |
+|  **Mumbai**   |    0.4    |   0.4   |  0.2   |
+
+The sum of each row of the transition matrix must sum up to 1 as it covers all the possibilities.
+
+Following is the markov transition graph, which shows the probabilities of going from one city to another.
+
+```{python}
+with schemdraw.Drawing() as dwg:
+    dwg += (m := flow.Circle(r=1.0).at((4, 0)).label('Mumbai').fill('lightblue'))
+    dwg += (b := flow.Circle(r=1.0).at((0, -4)).label('Bangalore').fill('lightblue'))
+    dwg += (c := flow.Circle(r=1.0).at((8, -4)).label('Chennai').fill('lightblue'))
+    dwg += elm.Wire('-', arrow='->').at(m.SW).to(b.NE).color('black').label('0.4')
+    dwg += elm.Wire('-', arrow='->').at(m.SE).to(c.NW).color('black').label('0.4')
+    dwg += elm.ArcLoop(arrow='<-').at(m.NW).to(m.NNE).label('0.2')
+    dwg += elm.Arc2(k=.3, arrow='->').at(b.N).to(m.W).label('0.3')
+    dwg += elm.Wire('-', arrow='->').at(b.E).to(c.W).color('black').label('0.4')
+    dwg += elm.ArcLoop(arrow='->').at(b.S).to(b.SW).label('0.3')
+    dwg += elm.ArcLoop(arrow='<-').at(c.SE).to(c.S).label('0.1')
+    dwg += elm.Arc2(k=-.3, arrow='->').at(c.N).to(m.E).label('0.7')
+    dwg += elm.Arc2(k=.1, arrow='->').at(c.SW).to(b.SE).label('0.2')
+```
+
+## Markov chain sampling
+
+We can generate a sequence of observations using the following,
+
+1.  Select initial state$(x_1)$ using $\pi$.
+2.  Sample the state$(x_t)$ from $A$ and $x_{t-1}$, for $t \in[2,..,T]$.
+
+Let's take the above example and generate a sequence of 6 time stamps.
+
+```{python}
+import pandas as pd
+import numpy as np
+
+data = {"Bangalore":[0.3,0.2,0.4],"Chennai":[0.4,0.1,0.4],"Mumbai":[0.3,0.7,0.2]}
+index_label = ["Bangalore","Chennai","Mumbai"]
+prior = {"prior probability":[0.4,0.2,0.4]}
+df1 = pd.DataFrame(data,index=index_label)
+df2 = pd.DataFrame(prior,index=index_label)
+
+pred = []
+first_choice = np.random.choice(index_label,p=df2["prior probability"])
+pred.append(first_choice)
+while (len(pred)<6):
+    current_city = pred[-1]
+    if current_city=="Bangalore":
+      index=0
+    elif current_city=="Chennai":
+      index=1
+    else:
+      index=2
+    next_city=np.random.choice(index_label,p=df1.iloc[index])
+    pred.append(next_city)
+
+with schemdraw.Drawing() as dwg:
+  i=0
+  for j in range(len(pred)):
+    city=pred[j]
+    if j==len(pred)-1:
+      dwg += (flow.Circle(r=1.0).at((i,0)).label(city).fill('lightblue'))
+    else:
+      dwg += (flow.Circle(r=1.0).at((i,0)).label(city).fill('lightblue'))
+      dwg += (flow.Arrow(l=1.0))
+      i+=3
+df2
+```
+
+You can change the values of prior probabilities and probabilities in the transition matrix in the link given below.
+
+<https://vannshblog-markovchain.streamlit.app/>
