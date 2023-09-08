@@ -130,7 +130,7 @@ Hence, we follow the top-bottom approach, where we add '0' to the left subset an
 
 # Visualizing the Binary Tree
 
-![](images/binary_tree 2.png)
+![](images/binary_tree%202.png)
 
 # Results and Observations
 
@@ -177,4 +177,4 @@ print(f"Entropy of input data is {entropy}")
 
 It turns out, shannon fano algorithm is not the most optimized algorithm and may not work always. The Huffman encoding which is a slightly modified version of the shannon-fano optimizes the data compression even further.
 
-<https://vannshblog-shannonfano.streamlit.app/>
+[Streamlit (vannshsf.streamlit.app)](https://vannshsf.streamlit.app/)
