@@ -1,0 +1,6 @@
+schemdraw
+graphviz
+pandas
+numpy
+sympy
+matplotlib

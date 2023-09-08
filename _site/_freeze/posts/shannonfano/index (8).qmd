@@ -1,0 +1,180 @@
+---
+title: "Shannon Fano encoding"
+description: "What is shannon fano encoding and how is it used in data compression."
+author: "Vannsh Jani"
+date: "08/30/2023"
+draft: false
+---
+
+# Shannon fano encoding
+
+The Shannon fano algorithm is a lossless data compression technique. Data compression is the process of encoding or converting data in such a way that it consumes less memory space. Hence, it reduces the resources required to store and transmit data.
+
+For eg, it would make more sense to assign symbols or characters occuring more frequently to consume less number of bits than to assign equal bits to all characters. Hence, it assigns codes of variable lengths to each character. In the realm of data compression, two distinct but connected methods for creating a prefix code for the characters is Shannon Fano encoding.
+
+# Algorithm
+
+1.  We find out the frequency or probability of occurance of each character or symbol and store it in an array.
+2.  We sort the array in decreasing order based on probability(frequency).
+3.  Then, we split the list in two parts with as much similarity(least variance) between the frequency/probability of left and right parts.
+4.  We assign the binary digit '0' to the left part and binary digit '1' to the right part. This implies that symbols in the left section will begin with '0' and symbols in the right section will begin with '1'.
+5.  We repeat steps 3 and 4 by splitting each section into left and right sections and assigning the binary digits '0' and '1' to them unitl each section is left with just one symbol(analogous to leaf node of binary tree).
+
+Let's better understand shannon-fano and visualize it using examples. We'll encode the characters of the following sentence.
+
+**"In the tranquil stillness of the early morning, birdsong filled the air as the first rays of sunlight painted the horizon with hues of pink and orange, creating a breathtakingly beautiful scene that seemed to belong to a world untouched by time."**
+
+Let's first calculate the probability of each character in the above statement, and sort them based on probabilities in descending order.
+
+```{python}
+sentence = "In the tranquil stillness of the early morning, birdsong filled the air as the first rays of sunlight painted the horizon with hues of pink and orange, creating a breathtakingly beautiful scene that seemed to belong to a world untouched by time."
+def generate_prob(sentence):
+    d={}
+    special=0
+    for c in sentence:
+        if c=="," or c==".":
+            special+=1
+            continue
+        elif c.lower() in d:
+            d[c.lower()] += 1
+        else:
+            d[c.lower()] = 1
+    total_char = len(sentence)-special
+    for key in d:
+        d[key] = d[key]/total_char
+    return d
+seq = generate_prob(sentence)
+seq=sorted(seq.items(),key=lambda item: item[1], reverse=True)
+d = dict(seq)
+d
+
+```
+
+We create nodes for the sequence and build a tree following the top to bottom approach.
+
+Since we want the splits to have similar total probabilities, we can assign '0' and '1' alternatively on the descended probability sequence or we can create the left subset until the probabilities of all the subsets approximately reach half of the total probability value.
+
+```{python}
+class Node:
+    def __init__(self,char,prob):
+        self.char=char
+        self.p=prob
+        self.code=""
+        self.left=None
+        self.right=None
+
+initial=""
+for c in seq:
+    initial+=c[0]
+root = Node(initial,1)
+
+
+def split(node):
+    chars = node.char
+    left_subset={}
+    right_subset={}
+    for i in range(len(chars)):
+        if i%2==0:
+            left_subset[chars[i]] = d[chars[i]]
+        else:
+            right_subset[chars[i]] = d[chars[i]]
+    return left_subset,right_subset
+
+def Build_tree(root):
+    if len(root.char)==1:
+        return
+    left_subset,right_subset = split(root)
+    left_char=""
+    right_char=""
+
+    for c in left_subset:
+        left_char+=c
+    for cr in right_subset:
+        right_char+=cr
+    left_prob = sum(left_subset.values())
+    right_prob = sum(right_subset.values())
+
+    left_node = Node(char=left_char,prob=left_prob)
+    right_node = Node(char=right_char,prob=right_prob)
+    root.left = left_node
+    root.right = right_node
+    Build_tree(left_node)
+    Build_tree(right_node)
+    
+Build_tree(root)
+
+def assign_codes(root):
+    if root.left is None and root.right is None:
+        return
+    if root.left is not None:
+        root.left.code = "0" + root.code
+    if root.right is not None:
+        root.right.code = "1" + root.code
+    assign_codes(root.left)
+    assign_codes(root.right)
+assign_codes(root)
+
+total_bits=0
+def print_codes(root):
+    global total_bits
+    if root is not None:
+        if (len(root.char)==1):
+          total_bits += len(root.code)*sentence.count(root.char)
+          print(f"Character is '{root.char}', probability is {round(root.p,4)} and code is {root.code}")
+        print_codes(root.left)
+        print_codes(root.right)
+print_codes(root)
+```
+
+Hence, we follow the top-bottom approach, where we add '0' to the left subset and '1' to the right subset as we traverse down the tree.
+
+# Visualizing the Binary Tree
+
+![](images/binary_tree.png)
+
+# Results and Observations
+
+If we consider the "ascii" encoding, we would have to consider 8 bits for each letter, whereas we consume less number of bits using shannon-fano encoding.
+
+```{python}
+print(f"No.of bits using ascii = {len(sentence)*8}")
+print(f"No.of bits using shannon-fano = {total_bits}")
+```
+
+Shannon-fano algorithm certainly performs better than the ascii encoding and does a decent job.
+
+### Compression ratio
+
+The compression ratio tells us how much smaller the compressed data is compared to the original data. The higher the compression ratio, the better the compression.
+
+Compression ratio = Before Compression / After compression
+
+```{python}
+b = len(sentence)*8
+a = total_bits
+print(f"compression ratio is,",(b/a))
+```
+
+### Entropy
+
+Entropy is the measure of randomness of data, higher the entropy more random the data. More random the data, the more number of bits we need to measure it.
+
+$$
+H(x) = -\Sigma_{i=1}^n p(x_i)log_2(p(x_i))
+$$
+
+```{python}
+import numpy as np
+def calc_entropy(p):
+  return -1 * p * np.log2(p)
+
+entropy = 0
+for c in d:
+  entropy += calc_entropy(d[c])
+  
+print(f"Entropy of input data is {entropy}")
+```
+
+It turns out, shannon fano algorithm is not the most optimized algorithm and may not work always. The Huffman encoding which is a slightly modified version of the shannon-fano optimizes the data compression even further.
+
+<https://vannshblog-shannonfano.streamlit.app/>
