@@ -121,4 +121,4 @@ which is the true value indeed. Hence, the Taylor series exactly approximates $f
 
 You can visualize the approximations of the Taylor series in the link given below.
 
-[Streamlit (vannshtaylor.streamlit.app)](https://vannshtaylor.streamlit.app/)
+<https://vannshtaylor.streamlit.app/>
