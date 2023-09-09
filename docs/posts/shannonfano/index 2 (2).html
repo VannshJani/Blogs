@@ -203,7 +203,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><strong>“In the tranquil stillness of the early morning, birdsong filled the air as the first rays of sunlight painted the horizon with hues of pink and orange, creating a breathtakingly beautiful scene that seemed to belong to a world untouched by time.”</strong></p>
 <p>Let’s first calculate the probability of each character in the above statement, and sort them based on probabilities in descending order.</p>
 <div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>sentence <span class="op">=</span> <span class="st">"In the tranquil stillness of the early morning, birdsong filled the air as the first rays of sunlight painted the horizon with hues of pink and orange, creating a breathtakingly beautiful scene that seemed to belong to a world untouched by time."</span></span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>sentence <span class="op">=</span> <span class="st">"aaaaaaaabbbbccd"</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_prob(sentence):</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    d<span class="op">=</span>{}</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    special<span class="op">=</span><span class="dv">0</span></span>
@@ -224,29 +224,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="bu">dict</span>(seq)</span>
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>d</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="1">
-<pre><code>{'e': 0.10945273631840796,
- 't': 0.1044776119402985,
- 'i': 0.0845771144278607,
- 'n': 0.0845771144278607,
- 'a': 0.07462686567164178,
- 'o': 0.06467661691542288,
- 'h': 0.05970149253731343,
- 'r': 0.05970149253731343,
- 'l': 0.05472636815920398,
- 's': 0.05472636815920398,
- 'u': 0.03482587064676617,
- 'g': 0.03482587064676617,
- 'd': 0.03482587064676617,
- 'f': 0.029850746268656716,
- 'b': 0.024875621890547265,
- 'y': 0.01990049751243781,
- 'm': 0.014925373134328358,
- 'c': 0.014925373134328358,
- 'p': 0.009950248756218905,
- 'w': 0.009950248756218905,
- 'k': 0.009950248756218905,
- 'q': 0.004975124378109453,
- 'z': 0.004975124378109453}</code></pre>
+<pre><code>{'a': 0.5333333333333333,
+ 'b': 0.26666666666666666,
+ 'c': 0.13333333333333333,
+ 'd': 0.06666666666666667}</code></pre>
 </div>
 </div>
 <p>We create nodes for the sequence and build a tree following the top to bottom approach.</p>
@@ -332,36 +313,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>        print_codes(root.right)</span>
 <span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>print_codes(root)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Character is 'e', probability is 0.1095 and code is 0000
-Character is 't', probability is 0.1045 and code is 1000
-Character is 'i', probability is 0.0846 and code is 100
-Character is 'n', probability is 0.0846 and code is 0010
-Character is 'a', probability is 0.0746 and code is 1010
-Character is 'o', probability is 0.0647 and code is 110
-Character is 'h', probability is 0.0597 and code is 00001
-Character is 'r', probability is 0.0597 and code is 10001
-Character is 'l', probability is 0.0547 and code is 1001
-Character is 's', probability is 0.0547 and code is 0101
-Character is 'u', probability is 0.0348 and code is 1101
-Character is 'g', probability is 0.0348 and code is 00011
-Character is 'd', probability is 0.0348 and code is 10011
-Character is 'f', probability is 0.0299 and code is 01011
-Character is 'b', probability is 0.0249 and code is 11011
-Character is 'y', probability is 0.0199 and code is 000111
-Character is 'm', probability is 0.0149 and code is 100111
-Character is 'c', probability is 0.0149 and code is 10111
-Character is 'p', probability is 0.01 and code is 001111
-Character is 'w', probability is 0.01 and code is 101111
-Character is 'k', probability is 0.01 and code is 011111
-Character is 'q', probability is 0.005 and code is 0111111
-Character is 'z', probability is 0.005 and code is 1111111</code></pre>
+<pre><code>Character is 'a', probability is 0.5333 and code is 0
+Character is 'b', probability is 0.2667 and code is 01
+Character is 'c', probability is 0.1333 and code is 011
+Character is 'd', probability is 0.0667 and code is 111</code></pre>
 </div>
 </div>
 <p>Hence, we follow the top-bottom approach, where we add ‘0’ to the left subset and ‘1’ to the right subset as we traverse down the tree.</p>
 </section>
 <section id="visualizing-the-binary-tree" class="level1">
 <h1>Visualizing the Binary Tree</h1>
-<p><img src="images/binary_tree 2.png" class="img-fluid"></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/sf-01.png" width="278" height="319" class="figure-img"></p>
+</figure>
+</div>
 </section>
 <section id="results-and-observations" class="level1">
 <h1>Results and Observations</h1>
@@ -370,8 +336,8 @@ Character is 'z', probability is 0.005 and code is 1111111</code></pre>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"No.of bits using ascii = </span><span class="sc">{</span><span class="bu">len</span>(sentence)<span class="op">*</span><span class="dv">8</span><span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"No.of bits using shannon-fano = </span><span class="sc">{</span>total_bits<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>No.of bits using ascii = 1960
-No.of bits using shannon-fano = 855</code></pre>
+<pre><code>No.of bits using ascii = 120
+No.of bits using shannon-fano = 25</code></pre>
 </div>
 </div>
 <p>Shannon-fano algorithm certainly performs better than the ascii encoding and does a decent job.</p>
@@ -384,7 +350,7 @@ No.of bits using shannon-fano = 855</code></pre>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> total_bits</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"compression ratio is,"</span>,(b<span class="op">/</span>a))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>compression ratio is, 2.2923976608187133</code></pre>
+<pre><code>compression ratio is, 4.8</code></pre>
 </div>
 </div>
 </section>
@@ -405,7 +371,7 @@ H(x) = -\Sigma_{i=1}^n p(x_i)log_2(p(x_i))
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Entropy of input data is </span><span class="sc">{</span>entropy<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Entropy of input data is 4.129861577574568</code></pre>
+<pre><code>Entropy of input data is 1.640223928941852</code></pre>
 </div>
 </div>
 <p>It turns out, shannon fano algorithm is not the most optimized algorithm and may not work always. The Huffman encoding which is a slightly modified version of the shannon-fano optimizes the data compression even further.</p>

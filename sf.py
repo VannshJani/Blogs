@@ -3,7 +3,7 @@ import graphviz
 import pandas as pd
 
 st.title("Shannon Fano Encoding")
-sentence = st.text_input("Enter text to be encoded",value = "In the tranquil stillness of the early morning, birdsong filled the air as the first rays of sunlight painted the horizon with hues of pink and orange, creating a breathtakingly beautiful scene that seemed to belong to a world untouched by time.")
+sentence = st.text_input("Enter text to be encoded",value = "aaaaaaaabbbbccd")
 
 def generate_prob(sentence):
     d={}
@@ -39,14 +39,24 @@ root = Node(initial,1)
 
 
 def split(node):
-    chars = node.char
     left_subset={}
     right_subset={}
-    for i in range(len(chars)):
-        if i%2==0:
-            left_subset[chars[i]] = d[chars[i]]
-        else:
-            right_subset[chars[i]] = d[chars[i]]
+    total_p = node.p
+    half_p = total_p/2
+    sum=0
+    index = 0
+    seq=node.char
+    for c in seq:
+        if sum>=half_p:
+            break
+        sum+=d[c]
+        index+=1
+    left_char = seq[:index]
+    right_char = seq[index:]
+    for l in left_char:
+        left_subset[l]=d[l]
+    for r in right_char:
+        right_subset[r]=d[r]
     return left_subset,right_subset
 
 def Build_tree(root):
