@@ -1,5 +1,7 @@
 ---
 title: "Markov Chains"
+execute: 
+  echo: false
 description: "Understanding Markov chains."
 author: "Vannsh Jani"
 date: "08/27/2023"
@@ -132,3 +134,69 @@ df2
 You can change the values of prior probabilities and probabilities in the transition matrix in the link given below.
 
 <https://vannshmarkovchain.streamlit.app/>
+
+## Markov chain properties
+
+Let's understand some properties of markov chains with the following example
+
+```{python}
+with schemdraw.Drawing() as dwg:
+    dwg += (m := flow.Circle(r=1.0).at((4, 0)).label('0').fill('lightblue'))
+    dwg += (b := flow.Circle(r=1.0).at((0, -4)).label('1').fill('lightblue'))
+    dwg += (c := flow.Circle(r=1.0).at((8, -4)).label('2').fill('lightblue'))
+    dwg += elm.Wire('-', arrow='->').at(m.SW).to(b.NE).color('black')
+    dwg += elm.ArcLoop(arrow='<-').at(m.NW).to(m.NNE)
+    dwg += elm.Arc2(k=.1, arrow='->').at(b.E).to(c.W).color('black')
+    dwg += elm.ArcLoop(arrow='->').at(b.S).to(b.SW)
+    dwg += elm.Arc2(k=.1, arrow='->').at(c.SW).to(b.SE)
+
+```
+
+We know that if there is an arrow from state A to state B, then there is a non-zero transition probability from state A to state B. If we start random walk from state "0" in the above diagram, we can never come back to state zero even after infinite steps. Such a state where we cannot come back to is called a **transient state.** Hence, in the above example "0" is a transient state. If we look at state "1" or state "2" we know that we are bound to come back to the same state after some steps. Such a state is called a **recurrent state.** Here, state "1" and "2" are examples of recurrent states.
+
+In a markov chain, if all states not reachable from all other states, we say that the markov chain is **reducible.** In the above example, we cannot reach state "0" from state "1" or "2".
+
+If we add an arrow from state "2" to state "0", then it is possible to come back to state "0" and hence, "0" is not a transient state any more.
+
+```{python}
+with schemdraw.Drawing() as dwg:
+    dwg += (m := flow.Circle(r=1.0).at((4, 0)).label('0').fill('lightblue'))
+    dwg += (b := flow.Circle(r=1.0).at((0, -4)).label('1').fill('lightblue'))
+    dwg += (c := flow.Circle(r=1.0).at((8, -4)).label('2').fill('lightblue'))
+    dwg += elm.Wire('-', arrow='->').at(m.SW).to(b.NE).color('black')
+    dwg += elm.ArcLoop(arrow='<-').at(m.NW).to(m.NNE)
+    dwg += elm.Arc2(k=.1, arrow='->').at(b.E).to(c.W).color('black')
+    dwg += elm.ArcLoop(arrow='->').at(b.S).to(b.SW)
+    dwg += elm.Arc2(k=.1, arrow='->').at(c.SW).to(b.SE)
+    dwg += elm.Wire('-',arrow='->').at(c.NW).to(m.SE).color('black')
+```
+
+Such a markov chain, where it is possible to go from every state to another(not necessarily in one move) is called an **ergodic markov chain.**
+
+## Transition in n steps
+
+Let's consider the cities example again, suppose we wanted to calculate the probability of travelling from Bangalore to Chennai in 2 steps, we will have to consider all possible cases.
+
+$$
+A=\begin{bmatrix} 0.3 & 0.4 & 0.3 \\ 0.2 & 0.1 & 0.7 \\ 0.4 & 0.4 & 0.2 \end{bmatrix}
+$$
+
+Let's denote probability of going from state i to state j in n steps as $p_{ij}(n)$. In this example 0 denotes Bangalore, 1 denotes Chennai and 2 denotes Mumbai.
+
+$$
+p_{01}(2) = p_{02}(1)p_{21}(1)+p_{00}(1)p_{01}(1)+p_{01}(1)p_{11}(1)
+$$
+
+Note that $p_{02}(1)$ is just equal to $A_{02}$. Hence, the above equation can be written as
+
+$$
+\begin{equation}\begin{split} p_{01}(2) &= A_{02}A_{21}+A_{00}A_{01}+A_{01}A_{11} \\ p_{01}(2) &= \begin{bmatrix} A_{00} & A_{01} & A_{02} \end{bmatrix} \begin{bmatrix} A_{01} \\ A_{11} \\ A_{21} \end{bmatrix} \end{split} \end{equation}
+$$
+
+Hence $p_{01}(2)$ is the dot product of the 0th row and 1st column of matrix A. Hence $p_{01}(2)$ is the element present in the 0th row and the 1st column in $AXA$ or $A^2$. Let's verify it.
+
+$$
+\begin{equation}\begin{split} p_{01}(2) &= 0.3*0.4+0.3*0.4+0.4*0.1 \\ p_{01}(2) &= 0.28 \\ A^2 &= \begin{bmatrix} 0.29 & 0.28 & 0.43 \\ 0.36 & 0.37 & 0.27\\ 0.28 & 0.28 & 0.44 \end{bmatrix}\end{split}\end{equation}
+$$
+
+Hence, $A^n_{ij}$ denotes the probability of moving from state i to state j in n steps. If some power of the trasnition matrix A has all positive values then it is possible to move from every state to every other where the number of steps is equal to the power taken of A and hence, A is ergodic.

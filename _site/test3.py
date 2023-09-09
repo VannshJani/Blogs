@@ -1,15 +1,9 @@
-import streamlit as st
-import graphviz
-import pandas as pd
-
-st.title("Shannon Fano Encoding")
-sentence = st.text_input("Enter text to be encoded",value = "aaaaaaaabbbbccd")
-
+sentence = "Hi i am vannsh Jani"
 def generate_prob(sentence):
     d={}
     special=0
     for c in sentence:
-        if c=="," or c==".":
+        if c=="," or c=="." or c==" ":
             special+=1
             continue
         elif c.lower() in d:
@@ -37,6 +31,7 @@ for c in seq:
     initial+=c[0]
 root = Node(initial,1)
 
+nodes = []
 
 def split(node):
     left_subset={}
@@ -79,7 +74,7 @@ def Build_tree(root):
     root.right = right_node
     Build_tree(left_node)
     Build_tree(right_node)
-
+    
 Build_tree(root)
 
 def assign_codes(root):
@@ -93,41 +88,10 @@ def assign_codes(root):
     assign_codes(root.right)
 assign_codes(root)
 
-total_bits=0
-data={"Character":[],"Probability":[],"Code":[]}
 def print_codes(root):
-    global total_bits
     if root is not None:
         if (len(root.char)==1):
-          total_bits += len(root.code)*sentence.count(root.char)
-          data["Character"].append(root.char)
-          data["Probability"].append(root.p)
-          data["Code"].append(root.code)
+            print(f"Character is '{root.char}', probability is {root.p} and code is {root.code}")
         print_codes(root.left)
         print_codes(root.right)
 print_codes(root)
-
-df = pd.DataFrame(data)
-st.dataframe(df)
-
-st.header("Binary Tree")
-def visualize_binary_tree(root):
-    dot = graphviz.Digraph()
-    dot.node(str(root.char))
-
-    def add_nodes_edges(node):
-        if node.left:
-            dot.node(str(node.left.char))
-            dot.edge(str(node.char), str(node.left.char),label="0")
-            add_nodes_edges(node.left)
-        if node.right:
-            dot.node(str(node.right.char))
-            dot.edge(str(node.char), str(node.right.char),label="1")
-            add_nodes_edges(node.right)
-
-    add_nodes_edges(root)
-    dot.save('binary_tree.png')
-    st.graphviz_chart(dot,use_container_width=True)
-
-
-visualize_binary_tree(root)

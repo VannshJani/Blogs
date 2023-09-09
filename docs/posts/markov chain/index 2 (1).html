@@ -23,40 +23,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -197,21 +163,6 @@ P(x_t|x_1,x_2,...x_{t-1})=P(x_t|x_{t-1})
 \]</span></p>
 <p>Following is how we can represent the dependencies in data</p>
 <div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> schemdraw</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> schemdraw <span class="im">import</span> flow</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> schemdraw.elements <span class="im">as</span> elm</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> schemdraw.Drawing() <span class="im">as</span> dwg:</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (start <span class="op">:=</span> flow.Circle().label(<span class="st">'$x_1$'</span>).fill(<span class="st">'lightblue'</span>))</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (flow.Arrow(l<span class="op">=</span><span class="fl">1.5</span>))</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (b <span class="op">:=</span> flow.Circle().at((<span class="dv">3</span>, <span class="dv">0</span>)).label(<span class="st">'$x_2$'</span>).fill(<span class="st">'lightblue'</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (flow.Arrow(l<span class="op">=</span><span class="fl">1.5</span>))</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (c <span class="op">:=</span> flow.Circle().at((<span class="dv">6</span>, <span class="dv">0</span>)).label(<span class="st">'$x_3$'</span>).fill(<span class="st">'lightblue'</span>))</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (flow.Circle(r<span class="op">=</span><span class="fl">0.05</span>).at((<span class="fl">7.56</span>,<span class="dv">0</span>)).fill(<span class="st">"black"</span>))</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (flow.Circle(r<span class="op">=</span><span class="fl">0.05</span>).at((<span class="fl">7.76</span>,<span class="dv">0</span>)).fill(<span class="st">"black"</span>))</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (flow.Circle(r<span class="op">=</span><span class="fl">0.05</span>).at((<span class="fl">7.96</span>,<span class="dv">0</span>)).fill(<span class="st">"black"</span>))</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (flow.Arrow(l<span class="op">=</span><span class="fl">1.5</span>))</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (c <span class="op">:=</span> flow.Circle().at((<span class="fl">9.6</span>, <span class="dv">0</span>)).label(<span class="st">'$x_n$'</span>).fill(<span class="st">'lightblue'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="index 2 (1)_files/figure-html/cell-2-output-1.svg" class="img-fluid"></p>
 </div>
@@ -259,19 +210,6 @@ P(x_1,x_2,..x_n)=P(x_1)P(x_2|x_1)P(x_3|x_2)...P(x_n|x_{n-1})
 <p>The sum of each row of the transition matrix must sum up to 1 as it covers all the possibilities.</p>
 <p>Following is the markov transition graph, which shows the probabilities of going from one city to another.</p>
 <div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> schemdraw.Drawing() <span class="im">as</span> dwg:</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (m <span class="op">:=</span> flow.Circle(r<span class="op">=</span><span class="fl">1.0</span>).at((<span class="dv">4</span>, <span class="dv">0</span>)).label(<span class="st">'Mumbai'</span>).fill(<span class="st">'lightblue'</span>))</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (b <span class="op">:=</span> flow.Circle(r<span class="op">=</span><span class="fl">1.0</span>).at((<span class="dv">0</span>, <span class="op">-</span><span class="dv">4</span>)).label(<span class="st">'Bangalore'</span>).fill(<span class="st">'lightblue'</span>))</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> (c <span class="op">:=</span> flow.Circle(r<span class="op">=</span><span class="fl">1.0</span>).at((<span class="dv">8</span>, <span class="op">-</span><span class="dv">4</span>)).label(<span class="st">'Chennai'</span>).fill(<span class="st">'lightblue'</span>))</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.Wire(<span class="st">'-'</span>, arrow<span class="op">=</span><span class="st">'-&gt;'</span>).at(m.SW).to(b.NE).color(<span class="st">'black'</span>).label(<span class="st">'0.4'</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.Wire(<span class="st">'-'</span>, arrow<span class="op">=</span><span class="st">'-&gt;'</span>).at(m.SE).to(c.NW).color(<span class="st">'black'</span>).label(<span class="st">'0.4'</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.ArcLoop(arrow<span class="op">=</span><span class="st">'&lt;-'</span>).at(m.NW).to(m.NNE).label(<span class="st">'0.2'</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.Arc2(k<span class="op">=</span><span class="fl">.3</span>, arrow<span class="op">=</span><span class="st">'-&gt;'</span>).at(b.N).to(m.W).label(<span class="st">'0.3'</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.Wire(<span class="st">'-'</span>, arrow<span class="op">=</span><span class="st">'-&gt;'</span>).at(b.E).to(c.W).color(<span class="st">'black'</span>).label(<span class="st">'0.4'</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.ArcLoop(arrow<span class="op">=</span><span class="st">'-&gt;'</span>).at(b.S).to(b.SW).label(<span class="st">'0.3'</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.ArcLoop(arrow<span class="op">=</span><span class="st">'&lt;-'</span>).at(c.SE).to(c.S).label(<span class="st">'0.1'</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.Arc2(k<span class="op">=-</span><span class="fl">.3</span>, arrow<span class="op">=</span><span class="st">'-&gt;'</span>).at(c.N).to(m.E).label(<span class="st">'0.7'</span>)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    dwg <span class="op">+=</span> elm.Arc2(k<span class="op">=</span><span class="fl">.1</span>, arrow<span class="op">=</span><span class="st">'-&gt;'</span>).at(c.SW).to(b.SE).label(<span class="st">'0.2'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="index 2 (1)_files/figure-html/cell-3-output-1.svg" class="img-fluid"></p>
 </div>
@@ -285,40 +223,6 @@ P(x_1,x_2,..x_n)=P(x_1)P(x_2|x_1)P(x_3|x_2)...P(x_n|x_{n-1})
 </ol>
 <p>Let’s take the above example and generate a sequence of 6 time stamps.</p>
 <div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> {<span class="st">"Bangalore"</span>:[<span class="fl">0.3</span>,<span class="fl">0.2</span>,<span class="fl">0.4</span>],<span class="st">"Chennai"</span>:[<span class="fl">0.4</span>,<span class="fl">0.1</span>,<span class="fl">0.4</span>],<span class="st">"Mumbai"</span>:[<span class="fl">0.3</span>,<span class="fl">0.7</span>,<span class="fl">0.2</span>]}</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>index_label <span class="op">=</span> [<span class="st">"Bangalore"</span>,<span class="st">"Chennai"</span>,<span class="st">"Mumbai"</span>]</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>prior <span class="op">=</span> {<span class="st">"prior probability"</span>:[<span class="fl">0.4</span>,<span class="fl">0.2</span>,<span class="fl">0.4</span>]}</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>df1 <span class="op">=</span> pd.DataFrame(data,index<span class="op">=</span>index_label)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>df2 <span class="op">=</span> pd.DataFrame(prior,index<span class="op">=</span>index_label)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> []</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>first_choice <span class="op">=</span> np.random.choice(index_label,p<span class="op">=</span>df2[<span class="st">"prior probability"</span>])</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>pred.append(first_choice)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (<span class="bu">len</span>(pred)<span class="op">&lt;</span><span class="dv">6</span>):</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    current_city <span class="op">=</span> pred[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> current_city<span class="op">==</span><span class="st">"Bangalore"</span>:</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      index<span class="op">=</span><span class="dv">0</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> current_city<span class="op">==</span><span class="st">"Chennai"</span>:</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>      index<span class="op">=</span><span class="dv">1</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>      index<span class="op">=</span><span class="dv">2</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    next_city<span class="op">=</span>np.random.choice(index_label,p<span class="op">=</span>df1.iloc[index])</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    pred.append(next_city)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> schemdraw.Drawing() <span class="im">as</span> dwg:</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  i<span class="op">=</span><span class="dv">0</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(pred)):</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    city<span class="op">=</span>pred[j]</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> j<span class="op">==</span><span class="bu">len</span>(pred)<span class="op">-</span><span class="dv">1</span>:</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>      dwg <span class="op">+=</span> (flow.Circle(r<span class="op">=</span><span class="fl">1.0</span>).at((i,<span class="dv">0</span>)).label(city).fill(<span class="st">'lightblue'</span>))</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>      dwg <span class="op">+=</span> (flow.Circle(r<span class="op">=</span><span class="fl">1.0</span>).at((i,<span class="dv">0</span>)).label(city).fill(<span class="st">'lightblue'</span>))</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>      dwg <span class="op">+=</span> (flow.Arrow(l<span class="op">=</span><span class="fl">1.0</span>))</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>      i<span class="op">+=</span><span class="dv">3</span></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>df2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <p><img src="index 2 (1)_files/figure-html/cell-4-output-1.svg" class="img-fluid"></p>
 </div>
@@ -354,6 +258,44 @@ P(x_1,x_2,..x_n)=P(x_1)P(x_2|x_1)P(x_3|x_2)...P(x_n|x_{n-1})
 </div>
 <p>You can change the values of prior probabilities and probabilities in the transition matrix in the link given below.</p>
 <p><a href="https://vannshmarkovchain.streamlit.app/" class="uri">https://vannshmarkovchain.streamlit.app/</a></p>
+</section>
+<section id="markov-chain-properties" class="level2">
+<h2 class="anchored" data-anchor-id="markov-chain-properties">Markov chain properties</h2>
+<p>Let’s understand some properties of markov chains with the following example</p>
+<div class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<p><img src="index 2 (1)_files/figure-html/cell-5-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<p>We know that if there is an arrow from state A to state B, then there is a non-zero transition probability from state A to state B. If we start random walk from state “0” in the above diagram, we can never come back to state zero even after infinite steps. Such a state where we cannot come back to is called a <strong>transient state.</strong> Hence, in the above example “0” is a transient state. If we look at state “1” or state “2” we know that we are bound to come back to the same state after some steps. Such a state is called a <strong>recurrent state.</strong> Here, state “1” and “2” are examples of recurrent states.</p>
+<p>In a markov chain, if all states not reachable from all other states, we say that the markov chain is <strong>reducible.</strong> In the above example, we cannot reach state “0” from state “1” or “2”.</p>
+<p>If we add an arrow from state “2” to state “0”, then it is possible to come back to state “0” and hence, “0” is not a transient state any more.</p>
+<div class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display">
+<p><img src="index 2 (1)_files/figure-html/cell-6-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<p>Such a markov chain, where it is possible to go from every state to another(not necessarily in one move) is called an <strong>ergodic markov chain.</strong></p>
+</section>
+<section id="transition-in-n-steps" class="level2">
+<h2 class="anchored" data-anchor-id="transition-in-n-steps">Transition in n steps</h2>
+<p>Let’s consider the cities example again, suppose we wanted to calculate the probability of travelling from Bangalore to Chennai in 2 steps, we will have to consider all possible cases.</p>
+<p><span class="math display">\[
+A=\begin{bmatrix} 0.3 &amp; 0.4 &amp; 0.3 \\ 0.2 &amp; 0.1 &amp; 0.7 \\ 0.4 &amp; 0.4 &amp; 0.2 \end{bmatrix}
+\]</span></p>
+<p>Let’s denote probability of going from state i to state j in n steps as <span class="math inline">\(p_{ij}(n)\)</span>. In this example 0 denotes Bangalore, 1 denotes Chennai and 2 denotes Mumbai.</p>
+<p><span class="math display">\[
+p_{01}(2) = p_{02}(1)p_{21}(1)+p_{00}(1)p_{01}(1)+p_{01}(1)p_{11}(1)
+\]</span></p>
+<p>Note that <span class="math inline">\(p_{02}(1)\)</span> is just equal to <span class="math inline">\(A_{02}\)</span>. Hence, the above equation can be written as</p>
+<p><span class="math display">\[
+\begin{equation}\begin{split} p_{01}(2) &amp;= A_{02}A_{21}+A_{00}A_{01}+A_{01}A_{11} \\ p_{01}(2) &amp;= \begin{bmatrix} A_{00} &amp; A_{01} &amp; A_{02} \end{bmatrix} \begin{bmatrix} A_{01} \\ A_{11} \\ A_{21} \end{bmatrix} \end{split} \end{equation}
+\]</span></p>
+<p>Hence <span class="math inline">\(p_{01}(2)\)</span> is the dot product of the 0th row and 1st column of matrix A. Hence <span class="math inline">\(p_{01}(2)\)</span> is the element present in the 0th row and the 1st column in <span class="math inline">\(AXA\)</span> or <span class="math inline">\(A^2\)</span>. Let’s verify it.</p>
+<p><span class="math display">\[
+\begin{equation}\begin{split} p_{01}(2) &amp;= 0.3*0.4+0.3*0.4+0.4*0.1 \\ p_{01}(2) &amp;= 0.28 \\ A^2 &amp;= \begin{bmatrix} 0.29 &amp; 0.28 &amp; 0.43 \\ 0.36 &amp; 0.37 &amp; 0.27\\ 0.28 &amp; 0.28 &amp; 0.44 \end{bmatrix}\end{split}\end{equation}
+\]</span></p>
+<p>Hence, <span class="math inline">\(A^n_{ij}\)</span> denotes the probability of moving from state i to state j in n steps. If some power of the trasnition matrix A has all positive values then it is possible to move from every state to every other where the number of steps is equal to the power taken of A and hence, A is ergodic.</p>
 
 
 </section>
