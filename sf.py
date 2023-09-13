@@ -59,6 +59,8 @@ def split(node):
         right_subset[r]=d[r]
     return left_subset,right_subset
 
+symbols=[root.char]
+prob = [root.p]
 def Build_tree(root):
     if len(root.char)==1:
         return
@@ -77,7 +79,11 @@ def Build_tree(root):
     right_node = Node(char=right_char,prob=right_prob)
     root.left = left_node
     root.right = right_node
+    symbols.append(left_node.char)
+    prob.append(left_node.p)
     Build_tree(left_node)
+    symbols.append(right_node.char)
+    prob.append(right_node.p)
     Build_tree(right_node)
 
 Build_tree(root)
@@ -109,25 +115,41 @@ print_codes(root)
 
 df = pd.DataFrame(data)
 st.dataframe(df)
+done=False
+prob[0] = float(prob[0])
+for p in range(len(prob)):
+    prob[p] = round(prob[p],3)
+if 'count' not in st.session_state:
+    st.session_state.count = 0
+if 'dot' not in st.session_state:
+    st.session_state.dot = graphviz.Digraph()
+st.session_state.dot.node(str(symbols[0])+str(" ")+str(prob[0]))
 
 st.header("Binary Tree")
-def visualize_binary_tree(root):
-    dot = graphviz.Digraph()
-    dot.node(str(root.char))
+if st.button("next",type="primary"):
+    st.session_state.count += 1
+    if st.session_state.count>=len(symbols):
+        st.write("Done")
+        done=True
+    else:
+        st.session_state.dot.node(str(symbols[st.session_state.count])+str(" ")+str(prob[st.session_state.count]))
+        parent = ""
+        for i in range(st.session_state.count-1,-1,-1):
+                if symbols[st.session_state.count] in symbols[i]:
+                    parent = symbols[i]
+                    parent_prob = prob[i]
+                    break
+        if st.session_state.count%2==0:
+            label="1"
+        else:
+            label = "0"
+        st.session_state.dot.edge(str(parent)+str(" ")+str(parent_prob), str(symbols[st.session_state.count])+str(" ")+str(prob[st.session_state.count]),label=label)
+            
+st.session_state.dot.save('test.png')
+st.graphviz_chart(st.session_state.dot,use_container_width=True)
+if done:
+    del st.session_state.count
+    del st.session_state.dot
 
-    def add_nodes_edges(node):
-        if node.left:
-            dot.node(str(node.left.char))
-            dot.edge(str(node.char), str(node.left.char),label="0")
-            add_nodes_edges(node.left)
-        if node.right:
-            dot.node(str(node.right.char))
-            dot.edge(str(node.char), str(node.right.char),label="1")
-            add_nodes_edges(node.right)
-
-    add_nodes_edges(root)
-    dot.save('binary_tree.png')
-    st.graphviz_chart(dot,use_container_width=True)
 
 
-visualize_binary_tree(root)

@@ -6,7 +6,7 @@ date: "08/30/2023"
 draft: false
 ---
 
-# Shannon fano encoding
+# Shannon Fano encoding
 
 The Shannon fano algorithm is a lossless data compression technique. Data compression is the process of encoding or converting data in such a way that it consumes less memory space. Hence, it reduces the resources required to store and transmit data.
 
