@@ -1,6 +1,7 @@
 import streamlit as st
 import graphviz
 import pandas as pd
+import numpy as np
 
 st.title("Shannon Fano Encoding")
 sentence = st.text_input("Enter text to be encoded",value = "aaaaaaaabbbbccd")
@@ -124,7 +125,33 @@ if 'count' not in st.session_state:
 if 'dot' not in st.session_state:
     st.session_state.dot = graphviz.Digraph()
 st.session_state.dot.node(str(symbols[0])+str(" ")+str(prob[0]))
+<<<<<<< HEAD
+=======
+def entropy(data):
+    chars = data['Character']
+    prob = data['Probability']
+    code = data["Code"]
+    sum=0
+    for i in range(len(chars)):
+        sum += -prob[i]*np.log2(prob[i])
+    return sum
+>>>>>>> c86ac98d0fe4dcc4f5c0216e00f77b45c4f022cb
 
+def cross_entropy(data):
+    chars = data['Character']
+    prob = data['Probability']
+    code = data["Code"]
+    sum=0
+    for i in range(len(chars)):
+        sum += -prob[i]*np.log2(1/(2**(len(code[i]))))
+    return sum
+st.write("Cross entropy is ",cross_entropy(data))
+st.write("Entropy is ",entropy(data))
+
+def KL_divergence(ce,e):
+    return ce-e
+st.write("KL Divergence is ",KL_divergence(cross_entropy(data),entropy(data)))
+st.write("---")
 st.header("Binary Tree")
 if st.button("next",type="primary"):
     st.session_state.count += 1
@@ -150,6 +177,9 @@ st.graphviz_chart(st.session_state.dot,use_container_width=True)
 if done:
     del st.session_state.count
     del st.session_state.dot
+<<<<<<< HEAD
 
+=======
+>>>>>>> c86ac98d0fe4dcc4f5c0216e00f77b45c4f022cb
 
 
