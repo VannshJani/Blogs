@@ -2,6 +2,7 @@ import streamlit as st
 import graphviz
 import pandas as pd
 import numpy as np
+import heapq
 
 st.title("Shannon Fano Encoding")
 sentence = st.text_input("Enter text to be encoded",value = "aaaaaaaabbbbccd")
@@ -143,12 +144,96 @@ def cross_entropy(data):
     for i in range(len(chars)):
         sum += -prob[i]*np.log2(1/(2**(len(code[i]))))
     return sum
-st.write("Cross entropy is ",cross_entropy(data))
+
 st.write("Entropy is ",entropy(data))
+st.write("Cross entropy for Shannon-Fano is ",cross_entropy(data))
 
 def KL_divergence(ce,e):
     return ce-e
-st.write("KL Divergence is ",KL_divergence(cross_entropy(data),entropy(data)))
+st.write("KL Divergence for Shannon-Fano is ",KL_divergence(cross_entropy(data),entropy(data)))
+st.write("---")
+
+
+s = 'aaaaaaaabbbbccd'
+s = s.lower()
+s_len = 0
+arr = [0]*26
+d1 = {}
+for i in range(len(s)):
+  if(s[i]==' ' or s[i]==',' or s[i]=='.' or s[i]==';'):
+    continue
+  s_len+=1
+  arr[ord(s[i])-ord('a')]+=1
+for i in range(len(arr)):
+  if arr[i]!=0:
+    d1[chr(i+ord('a'))] = arr[i]
+
+class Node1:
+    def __init__(self, freq, symbol, left=None, right=None):
+        self.freq = freq
+        self.symbol = symbol
+        self.left = left
+        self.right = right
+        self.huff = ''
+    
+    def __lt__(self, nxt):
+        return self.freq < nxt.freq
+
+
+codes = {}
+
+def huffman_codes(node, val=''):
+    newVal = val + str(node.huff)
+    if not node.left and not node.right:
+        # print(f"{node.symbol} -> {newVal}")
+        codes[node.symbol] = newVal
+    else:
+        huffman_codes(node.left, newVal)
+        huffman_codes(node.right, newVal)
+
+chars = list(d1.keys())
+freq = list(d1.values())
+nodes = []
+for x in range(len(chars)):
+    heapq.heappush(nodes, Node1(freq[x], chars[x]))
+
+while len(nodes) > 1:
+    left = heapq.heappop(nodes)
+    right = heapq.heappop(nodes)
+    left.huff = '0'
+    right.huff = '1'
+    new_symbol = left.symbol + right.symbol
+    new_freq = left.freq + right.freq
+    new_node = Node1(new_freq, new_symbol, left, right)
+    heapq.heappush(nodes, new_node)
+
+huffman_tree_root = nodes[0]
+huffman_codes(huffman_tree_root)
+
+
+prob1 = {}
+sum_p = 0
+
+for i in range(len(codes)):
+  prob1[list(codes.keys())[i]] = d1[list(codes.keys())[i]]/s_len
+  sum_p += prob1[list(codes.keys())[i]]
+
+q = {} # Stores q values needed to find cross entropy
+for i in range(len(codes)):
+  q[list(codes.keys())[i]] = np.log2(1/(2**(len(codes[list(codes.keys())[i]]))))
+cross_entropy1 = 0
+sym = list(q.keys())
+lq = list(q.values())
+for i in range(len(sym)):
+  cross_entropy1 += -1*prob1[sym[i]]*q[sym[i]]
+
+entropy1 = 0
+
+for i in range(len(sym)):
+  entropy1 += -1*prob1[sym[i]]*np.log2(prob1[sym[i]])
+st.write("Cross entropy for Huffman is ",cross_entropy1)
+st.write("KL Divergence for Huffman is ",cross_entropy1-entropy1)
+st.write("KL Divergence of Huffman is lesser than that of Shannon-Fano")
 st.write("---")
 st.header("Binary Tree")
 if st.button("next",type="primary"):

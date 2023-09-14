@@ -2,7 +2,4 @@ digraph {
 	"abcd 1.0"
 	"a 0.533"
 	"abcd 1.0" -> "a 0.533" [label=0]
-	"abcd 1.0"
-	"bcd 0.467"
-	"abcd 1.0" -> "bcd 0.467" [label=1]
 }

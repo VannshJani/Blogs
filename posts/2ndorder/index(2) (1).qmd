@@ -178,7 +178,7 @@ def plot_contour(guesses,X,Y,Z):
 plot_contour(guesses,X,Y,Z)
 ```
 
-<https://www.veed.io/view/57bda131-89ac-4bdf-a575-34e1034df8b9?panel=share>
+{{< video myscene1.mp4 >}}
 
 Through the contour plot we can understand that even though our initial guess was the point $(2,1)$ we finally reached the minima of the function. In the above contour plot, the bluish circle is the initial guess and the red cross is the final guess. Depending upon different initial guesses, the final guess could land onto different minimasor possibly even a saddle point.
 
