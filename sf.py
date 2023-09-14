@@ -125,8 +125,7 @@ if 'count' not in st.session_state:
 if 'dot' not in st.session_state:
     st.session_state.dot = graphviz.Digraph()
 st.session_state.dot.node(str(symbols[0])+str(" ")+str(prob[0]))
-<<<<<<< HEAD
-=======
+
 def entropy(data):
     chars = data['Character']
     prob = data['Probability']
@@ -135,7 +134,6 @@ def entropy(data):
     for i in range(len(chars)):
         sum += -prob[i]*np.log2(prob[i])
     return sum
->>>>>>> c86ac98d0fe4dcc4f5c0216e00f77b45c4f022cb
 
 def cross_entropy(data):
     chars = data['Character']
@@ -177,9 +175,5 @@ st.graphviz_chart(st.session_state.dot,use_container_width=True)
 if done:
     del st.session_state.count
     del st.session_state.dot
-<<<<<<< HEAD
-
-=======
->>>>>>> c86ac98d0fe4dcc4f5c0216e00f77b45c4f022cb
 
 
