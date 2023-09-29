@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Vannsh Jani">
+<meta name="dcterms.date" content="2023-09-26">
+<meta name="description" content="Understanding automatic differentiation through computational graphs">
+
+<title>Blogs - Computational graphs and automatic differentiation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Blogs</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Computational graphs and automatic differentiation</h1>
+                  <div>
+        <div class="description">
+          Understanding automatic differentiation through computational graphs
+        </div>
+      </div>
+                </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Vannsh Jani </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 26, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<section id="computational-graphs" class="level1">
+<h1>Computational graphs</h1>
+<p>Computational graphs is a method to represent complex mathematical expressions in simpler forms creating intermediate variables which simplify the expression. Given input values to the expression, computational graphs can calculate the final value of the graph by traversing the graph in the forward direction. They also provide a systematic way to compute derivatives of the final output of the graph with respect to the inputs and the intermediate variables by traversing the graph in the reverse direction. Hence, computational graphs can be useful in calculating gradient of a function and also help us understand automatic differentiation.</p>
+<p>Let’s better understand computational graphs with an example. Suppose we want to calculate the expression <span class="math inline">\(\text f(\text x,\text y)=\log(\text x^2 +\sin(3\text x \text y))=\text J\)</span>.Here we are considering natural logarithm. We can create the intermediate variables as follows.</p>
+<p><span class="math display">\[\begin{equation}\begin{split} \text x,\text y &amp;= \hspace{0.1cm} \text{inputs} \\ \text u &amp;= \hspace{0.1cm} 3\text x\text y \\ \text v &amp;= \hspace{0.1cm} \sin u \\ \text z &amp;= \hspace{0.1cm} \text v+\text x^2 \\ \text J &amp;= \hspace{0.1cm} \log z \\ \text J &amp;= \hspace{0.1cm} \text{output} \end{split}\end{equation}\]</span></p>
+<p>Following is the computational graph of the above function <span class="math inline">\(\text f\)</span>.</p>
+<div class="cell" data-execution_count="10">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> graphviz</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>graph <span class="op">=</span> graphviz.Graph(graph_attr<span class="op">=</span>{<span class="st">'rankdir'</span>: <span class="st">'LR'</span>})</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> graph.subgraph() <span class="im">as</span> s:</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'x'</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'u=3xy'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'v=sin(u)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'z=v+(x^2)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'J=log(z)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'output'</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'y'</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>, <span class="st">'u=3xy'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'y'</span>, <span class="st">'u=3xy'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'u=3xy'</span>, <span class="st">'v=sin(u)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'v=sin(u)'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'z=v+(x^2)'</span>, <span class="st">'J=log(z)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'J=log(z)'</span>,<span class="st">'output'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>graph</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<p><img src="autodiff_files/figure-html/cell-2-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<p>Let’s take an example and compute the output by traversing the graph in the forward direction. We will take <span class="math inline">\(\text x =\hspace{0.1cm} 2 \hspace{0.1cm} \text{and} \hspace{0.1cm} \text y = \hspace{0.1cm}3\)</span>.</p>
+<p>so <span class="math inline">\(\text f(2,3)=\hspace{0.1cm} 1.178\)</span> rounded off to 3 decimal places. We can verify the same using computational graphs.</p>
+<div class="cell" data-execution_count="429">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>graph <span class="op">=</span> graphviz.Graph(graph_attr<span class="op">=</span>{<span class="st">'rankdir'</span>: <span class="st">'LR'</span>})</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> graph.subgraph() <span class="im">as</span> s:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'x'</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'u=3xy'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'v=sin(u)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'z=v+(x^2)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'J=log(z)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'output'</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'y'</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>, <span class="st">'u=3xy'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'2'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'y'</span>, <span class="st">'u=3xy'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'3'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'u=3xy'</span>, <span class="st">'v=sin(u)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'18'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'v=sin(u)'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'-0.75'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'2'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'z=v+(x^2)'</span>, <span class="st">'J=log(z)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'3.249'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'J=log(z)'</span>,<span class="st">'output'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'1.178'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>graph</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="429">
+<p><img src="autodiff_files/figure-html/cell-3-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<p>Computational graphs can be used to calculate derivatives of final output of graph with respect to the inputs using the derivatives of the output with respect to the intermediate and the derivatives of the intermediate with respect to the inputs with the help of the chain rule. This is helpful in calculating the gradient of the output in the backpropagation algorithm which is used to train a neural network.</p>
+<p>We can define <span class="math inline">\(\frac{\partial \text f}{\partial \text x}\)</span> as how much more is the change in <span class="math inline">\(\text f\)</span> when there is a small change in <span class="math inline">\(\text x\)</span> where <span class="math inline">\(\text f\)</span> is a function of <span class="math inline">\(\text x\)</span> and possibly more variables. For our example let’s consider the small change in <span class="math inline">\(\text x\)</span> as <span class="math inline">\(\Delta \text x=\hspace{0.1cm}0.00001\)</span>.</p>
+<p>So for example if we change <span class="math inline">\(\text x\)</span> by <span class="math inline">\(\Delta \text x\)</span> and if <span class="math inline">\(\text f\)</span> changes by let’s say <span class="math inline">\(0.00004\)</span>, then <span class="math inline">\(\text f\)</span> has changed it’s value <span class="math inline">\(4\)</span> times more than <span class="math inline">\(\text x\)</span> and hence, the value of derivative of <span class="math inline">\(\text f\)</span> with respect to <span class="math inline">\(\text x\)</span> is <span class="math inline">\(4\)</span>.</p>
+<p>For our above example let’s try to compute the gradient of <span class="math inline">\(\text f\)</span> i.e <span class="math inline">\(\nabla \text f = \hspace{0.1cm} \begin{bmatrix} \frac{\partial \text f}{\partial \text x} \\ \frac{\partial \text f}{\partial \text y} \end{bmatrix}\)</span>.</p>
+<p>Let’s change <span class="math inline">\(\text z\)</span> by <span class="math inline">\(\Delta \text x\)</span>. Hence <span class="math inline">\(\text z\)</span> is <span class="math inline">\(3.24901\)</span>. <span class="math inline">\(\text J\)</span> changes by <span class="math inline">\(3.07\text x10^{-6}\)</span> and hence change in <span class="math inline">\(\text J\)</span> by change in <span class="math inline">\(\text z\)</span> is <span class="math inline">\(0.307\)</span> approximately which is the derivative of <span class="math inline">\(\text f\)</span> with respect to <span class="math inline">\(\text z\)</span>. Ignoring the round offs this value is equal to <span class="math inline">\(\frac{1}{\text z}\)</span>.</p>
+<p>Hence <span class="math inline">\(\frac{\partial \text J}{\partial \text z}=\hspace{0.1cm} \frac{1}{\text z}=\hspace{0.1cm}{0.307}\)</span></p>
+<div class="cell" data-execution_count="14">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>graph <span class="op">=</span> graphviz.Graph(graph_attr<span class="op">=</span>{<span class="st">'rankdir'</span>: <span class="st">'LR'</span>})</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> graph.subgraph() <span class="im">as</span> s:</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'x'</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'u=3xy'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'v=sin(u)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'z=v+(x^2)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'J=log(z)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'output'</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'y'</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>, <span class="st">'u=3xy'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'2'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'y'</span>, <span class="st">'u=3xy'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'3'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'u=3xy'</span>, <span class="st">'v=sin(u)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'18'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'v=sin(u)'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'-0.75'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'2'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'z=v+(x^2)'</span>, <span class="st">'J=log(z)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'3.249'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'J=log(z)'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'0.307'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'J=log(z)'</span>,<span class="st">'output'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'1.178'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>graph</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<p><img src="autodiff_files/figure-html/cell-4-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<p>similarly we can calculate <span class="math inline">\(\frac{\partial \text z}{\partial \text v}\)</span> and that comes out to be <span class="math inline">\(1\)</span> as <span class="math inline">\(\text z\)</span> increases by the same amount as <span class="math inline">\(\text v\)</span>, and <span class="math inline">\(\frac{\partial \text v}{\partial \text u}\)</span> and that comes out to be <span class="math inline">\(0.66\)</span> which is <span class="math inline">\(\cos u\)</span>.</p>
+<div class="cell" data-execution_count="335">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>graph <span class="op">=</span> graphviz.Graph(graph_attr<span class="op">=</span>{<span class="st">'rankdir'</span>: <span class="st">'LR'</span>})</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> graph.subgraph() <span class="im">as</span> s:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'x'</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'u=3xy'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'v=sin(u)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'z=v+(x^2)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'J=log(z)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    s.node(<span class="st">'output'</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'y'</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>, <span class="st">'u=3xy'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'2'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'y'</span>, <span class="st">'u=3xy'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'3'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'u=3xy'</span>, <span class="st">'v=sin(u)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'18'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'v=sin(u)'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'-0.75'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'z=v+(x^2)'</span>,<span class="st">'v=sin(u)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'1'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'2'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># graph.edge('z=v+(x^2)','x', dir='forward',label='25.0074',fontcolor='red')</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'z=v+(x^2)'</span>, <span class="st">'J=log(z)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'3.249'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'J=log(z)'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'0.307'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'J=log(z)'</span>,<span class="st">'output'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'1.178'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'v=sin(u)'</span>,<span class="st">'u=3xy'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'0.66'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>graph</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="335">
+<p><img src="autodiff_files/figure-html/cell-5-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<p>In the above graph, the red labels indicate the the derivative of the variable in the right box with respect to the variable in the left box. Hence, we know that,</p>
+<p><span class="math display">\[\begin{equation}\begin{split} \frac{\partial \text J}{\partial \text z}&amp;=\hspace{0.1cm}0.307 \\ \frac{\partial \text z}{\partial \text v}&amp;=\hspace{0.1cm}1 \\ \frac{\partial \text v}{\partial \text u}&amp;=\hspace{0.1cm}0.66 \end{split}\end{equation}\]</span></p>
+<p>From chain rule, we can say that,</p>
+<p><span class="math display">\[\begin{equation}\begin{split}\frac{\partial \text J}{\partial \text v}&amp;=\hspace{0.1cm}\frac{\partial \text J}{\partial \text z}.\frac{\partial \text z}{\partial \text v} \\ \frac{\partial \text J}{\partial \text v} &amp;=\hspace{0.1cm} 0.307 \\ \frac{\partial \text J}{\partial \text u}&amp;=\hspace{0.1cm}\frac{\partial \text J}{\partial \text v}.\frac{\partial \text v}{\partial \text u} \\ \frac{\partial \text J}{\partial \text u} &amp;=\hspace{0.1cm} 0.202  \end{split}\end{equation}  \]</span></p>
+<p>If we change <span class="math inline">\(\text y\)</span> by a small amount <span class="math inline">\(0.00001\)</span> i.e from <span class="math inline">\(3\)</span> to <span class="math inline">\(3.00001\)</span> then <span class="math inline">\(\text u\)</span> changes by <span class="math inline">\(0.00006\)</span> and hence the derivative of <span class="math inline">\(\text u\)</span> with respect to <span class="math inline">\(\text y\)</span> is equal to 6 which is equal to <span class="math inline">\(3\text x\)</span>. Similarly derivative of <span class="math inline">\(\text u\)</span> with respect to <span class="math inline">\(\text x\)</span> is <span class="math inline">\(9\)</span> which is <span class="math inline">\(3\text y\)</span>. The derivative of <span class="math inline">\(\text z\)</span> with respect to <span class="math inline">\(\text x\)</span> is equal to <span class="math inline">\(4\)</span>, as if <span class="math inline">\(\text x\)</span> changes by <span class="math inline">\(0.00001\)</span> then <span class="math inline">\(\text z\)</span> changes by <span class="math inline">\(0.00004\)</span>. These values are rounded off to two or three decimal places.</p>
+<p>Hence,</p>
+<div class="cell" data-execution_count="337">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>graph <span class="op">=</span> graphviz.Graph(graph_attr<span class="op">=</span>{<span class="st">'rankdir'</span>: <span class="st">'LR'</span>})</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'x'</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'y'</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'u=3xy'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'v=sin(u)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'z=v+(x^2)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'J=log(z)'</span>,shape <span class="op">=</span> <span class="st">'rectangle'</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>graph.node(<span class="st">'output'</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'z=v+(x^2)'</span>,<span class="st">'x'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'4'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'y'</span>,<span class="st">'u=3xy'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'3'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'u=3xy'</span>,<span class="st">'y'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'6'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>,constraint<span class="op">=</span><span class="st">'false'</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>,<span class="st">'u=3xy'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'2'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'u=3xy'</span>,<span class="st">'x'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'9'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>,constraint<span class="op">=</span><span class="st">'false'</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'u=3xy'</span>,<span class="st">'v=sin(u)'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'18'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'v=sin(u)'</span>,<span class="st">'z=v+(x^2)'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'-0.75'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'x'</span>,<span class="st">'z=v+(x^2)'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'2'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'z=v+(x^2)'</span>,<span class="st">'J=log(z)'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'3.249'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'J=log(z)'</span>,<span class="st">'output'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'1.178'</span>,fontcolor<span class="op">=</span><span class="st">'green'</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'z=v+(x^2)'</span>,<span class="st">'v=sin(u)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'1'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'J=log(z)'</span>, <span class="st">'z=v+(x^2)'</span>, <span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'0.307'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>graph.edge(<span class="st">'v=sin(u)'</span>,<span class="st">'u=3xy'</span>,<span class="bu">dir</span><span class="op">=</span><span class="st">'forward'</span>,label<span class="op">=</span><span class="st">'0.66'</span>,fontcolor<span class="op">=</span><span class="st">'red'</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>graph</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="337">
+<p><img src="autodiff_files/figure-html/cell-6-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+<p><span class="math display">\[ \begin{equation}\begin{split} \frac{\partial \text J}{\partial \text y}&amp;=\hspace{0.1cm}\frac{\partial \text J}{\partial \text u}.\frac{\partial \text u}{\partial \text y} \\ \frac{\partial \text J}{\partial \text y}&amp;=\hspace{0.1cm}1.22 \\ \frac{\partial \text J}{\partial \text x}&amp;=\hspace{0.1cm}\frac{\partial \text u}{\partial \text x}.\frac{\partial \text J}{\partial \text u} + \frac{\partial \text J}{\partial \text z}.\frac{\partial \text z}{\partial \text x} \\ \frac{\partial \text J}{\partial \text x}&amp;=\hspace{0.1cm}3.05 \end{split}\end{equation}\]</span></p>
+<p>Hence, if <span class="math inline">\(\text x=\hspace{0.1cm}2\)</span> and <span class="math inline">\(\text y=\hspace{0.1cm}3\)</span>, then <span class="math inline">\(\frac{\partial \text J}{\partial \text y}=\hspace{0.1cm}1.22 \hspace{0.2cm} \text{and}\hspace{0.1cm}\frac{\partial \text J}{\partial \text x}=\hspace{0.1cm}3.05\)</span> approximately, rounded off to two decimal places.</p>
+</section>
+<section id="automatic-differentiation-in-python" class="level1">
+<h1>Automatic differentiation in python</h1>
+<p>When we train neural netwworks for practical applications, they sometimes have millions of parameters and we need to calculate the derivative of the cost function with respect to each of these parameters with the help of intermediate variables and chain rule as seen above. So with the help of computer programs we can calculate gradient of the cost function efficiently.</p>
+<p>There are mainly two types of automatic differentiations, namely:</p>
+<ol type="1">
+<li>Forward mode</li>
+<li>Reverse mode</li>
+</ol>
+<section id="forward-mode" class="level3">
+<h3 class="anchored" data-anchor-id="forward-mode">Forward mode</h3>
+<p>In the forward mode we calculate the values of the intermediate variables also called the primals as we traverse through the graph, but simultaneously we also calculate the values of the derivatives(tangents) of the primals with respect to the input variables. We have to run a seperate forward pass for each input variable.</p>
+<p>Let’s perform automatic differentiation (forward mode) in python from scratch</p>
+<div class="cell" data-execution_count="372">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Pair:</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, val, der,var):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val <span class="op">=</span> val</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.der <span class="op">=</span> der</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.var <span class="op">=</span> var</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__add__</span>(<span class="va">self</span>, other):</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(other, Pair):</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">+</span> other.val, <span class="va">self</span>.der <span class="op">+</span> other.der,<span class="va">self</span>.var)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">+</span> other, <span class="va">self</span>.der,<span class="va">self</span>.var)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__sub__</span>(<span class="va">self</span>, other):</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(other, Pair):</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">-</span> other.val, <span class="va">self</span>.der <span class="op">-</span> other.der,<span class="va">self</span>.var)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">-</span> other, <span class="va">self</span>.der,<span class="va">self</span>.var)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__mul__</span>(<span class="va">self</span>, other):</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(other, Pair):</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">*</span> other.val,  other.val,<span class="va">self</span>.var)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">*</span> other, <span class="va">self</span>.der <span class="op">*</span> other,<span class="va">self</span>.var)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__truediv__</span>(<span class="va">self</span>, other):</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(other, Pair):</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">/</span> other.val, (<span class="va">self</span>.der <span class="op">*</span> other.val <span class="op">-</span> <span class="va">self</span>.val <span class="op">*</span> other.der) <span class="op">/</span> (other.val <span class="op">**</span> <span class="dv">2</span>),<span class="va">self</span>.var)</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">/</span> other, <span class="va">self</span>.der <span class="op">/</span> other,<span class="va">self</span>.var)</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> sin(<span class="va">self</span>):</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Pair(np.sin(<span class="va">self</span>.val), <span class="va">self</span>.der <span class="op">*</span> np.cos(<span class="va">self</span>.val),<span class="va">self</span>.var)</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>):</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Pair(np.log(<span class="va">self</span>.val), <span class="va">self</span>.der <span class="op">/</span> <span class="va">self</span>.val,<span class="va">self</span>.var)</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__pow__</span>(<span class="va">self</span>, power):</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Pair(<span class="va">self</span>.val <span class="op">**</span> power, power <span class="op">*</span> <span class="va">self</span>.val <span class="op">**</span> (power <span class="op">-</span> <span class="dv">1</span>) <span class="op">*</span> <span class="va">self</span>.der,<span class="va">self</span>.var)</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__repr__</span>(<span class="va">self</span>):</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f"Pair of function value and derivative with respect to </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>var<span class="sc">}</span><span class="ss"> is (</span><span class="sc">{</span><span class="bu">round</span>(<span class="va">self</span>.val,<span class="dv">3</span>)<span class="sc">}</span><span class="ss">, </span><span class="sc">{</span><span class="bu">round</span>(<span class="va">self</span>.der,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">)"</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>pairx <span class="op">=</span> Pair(<span class="dv">2</span>,<span class="dv">1</span>,<span class="st">"x"</span>)</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>pairy <span class="op">=</span> Pair(<span class="dv">3</span>,<span class="dv">1</span>,<span class="st">"y"</span>)</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> forward_pass_x(pairx,fv):</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    u <span class="op">=</span> (pairx<span class="op">*</span>fv)<span class="op">*</span><span class="dv">3</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> u.sin()</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> v <span class="op">+</span> pairx<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>    J <span class="op">=</span> z.log()</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(J)</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> forward_pass_y(pairy,fv):</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>    u <span class="op">=</span> (pairy<span class="op">*</span>fv)<span class="op">*</span><span class="dv">3</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> u.sin()</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> v <span class="op">+</span> fv<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>    J <span class="op">=</span> z.log()</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(J)</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>forward_pass_x(pairx,<span class="dv">3</span>)</span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>forward_pass_y(pairy,<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Pair of function value and derivative with respect to x is (1.178, 3.06)
+Pair of function value and derivative with respect to y is (1.178, 1.22)</code></pre>
+</div>
+</div>
+</section>
+<section id="reverse-mode" class="level3">
+<h3 class="anchored" data-anchor-id="reverse-mode">Reverse mode</h3>
+<p>Reverse mode autodiff is the same process as what we did in the above example in computation graphs. We forward pass through the computation graph calculating the final output and then we reverse pass through the graph calculating the derivative of the final output with respect to the intermediate variables and then using chain rule to calculate the derivative of the final output with respect to the input variables. Unlike forward mode autodiff we can calulate the gradient of the output function in just one reverse paas through the computation graph.</p>
+<p>Let’s implement reverse mode automatic differentiation from scratch and then verify it using pytorch.</p>
+<div class="cell" data-execution_count="56">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Scalar:    </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, val):</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.val <span class="op">=</span> val</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.grad <span class="op">=</span> <span class="fl">0.</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.backward <span class="op">=</span> <span class="kw">lambda</span>: <span class="va">None</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__repr__</span>(<span class="va">self</span>):</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f"Value: </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>val<span class="sc">}</span><span class="ss">, Gradient: </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>grad<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__add__</span>(<span class="va">self</span>, other):</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(other,Scalar):</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>            result <span class="op">=</span> Scalar(<span class="va">self</span>.val <span class="op">+</span> other.val)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            <span class="kw">def</span> backward():</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.grad <span class="op">+=</span> result.grad</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>                other.grad <span class="op">+=</span> result.grad</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.backward()</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>                other.backward()</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>            result.backward <span class="op">=</span> backward</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>            result <span class="op">=</span> Scalar(<span class="va">self</span>.val<span class="op">+</span>other)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>            <span class="kw">def</span> backward():</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.grad <span class="op">+=</span> result.grad</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.backward()</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>            result.backward <span class="op">=</span> backward</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> result</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__mul__</span>(<span class="va">self</span>, other):</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(other,Scalar):</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>            result <span class="op">=</span> Scalar(<span class="va">self</span>.val <span class="op">*</span> other.val)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>            <span class="kw">def</span> backward():</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.grad <span class="op">+=</span> other.val <span class="op">*</span> result.grad</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>                other.grad <span class="op">+=</span> <span class="va">self</span>.val <span class="op">*</span> result.grad</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.backward()</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>                other.backward()</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>            result.backward <span class="op">=</span> backward</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>            result <span class="op">=</span> Scalar(<span class="va">self</span>.val<span class="op">*</span>other)</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>            <span class="kw">def</span> backward():</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.grad <span class="op">+=</span> other <span class="op">*</span> result.grad</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>.backward()</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>            result.backward <span class="op">=</span> backward</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> result</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> sin(<span class="va">self</span>):</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> Scalar(np.sin(<span class="va">self</span>.val))</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> backward():</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.grad <span class="op">+=</span> np.cos(<span class="va">self</span>.val)<span class="op">*</span>result.grad</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.backward()</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>        result.backward <span class="op">=</span> backward</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> result</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>):</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> Scalar(np.log(<span class="va">self</span>.val))</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> backward():</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.grad <span class="op">+=</span> (<span class="dv">1</span><span class="op">/</span>(<span class="va">self</span>.val))<span class="op">*</span>result.grad</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.backward()</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>        result.backward <span class="op">=</span> backward</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> result</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> Scalar(<span class="fl">2.0</span>)</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> Scalar(<span class="fl">3.0</span>)</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>u <span class="op">=</span> x<span class="op">*</span>y<span class="op">*</span><span class="dv">3</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>v <span class="op">=</span> u.sin()</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>z <span class="op">=</span> v <span class="op">+</span> (x<span class="op">*</span>x)</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>J <span class="op">=</span> z.log()</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>J.grad <span class="op">=</span> <span class="fl">1.</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>J.backward()</span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Rounding off the derivatives to two decimal places"</span>)</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Derivative of J wrt x"</span>,<span class="bu">round</span>(x.grad,<span class="dv">2</span>))</span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Derivative of J wrt y"</span>,<span class="bu">round</span>(y.grad,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rounding off the derivatives to two decimal places
+Derivative of J wrt x 3.06
+Derivative of J wrt y 1.22</code></pre>
+</div>
+</div>
+<p>Let’s now use pytorch</p>
+<div class="cell" data-execution_count="25">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.tensor(<span class="fl">2.0</span>,requires_grad<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> torch.tensor(<span class="fl">3.0</span>,requires_grad<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> J(x,y):</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    u <span class="op">=</span> <span class="dv">3</span><span class="op">*</span>x<span class="op">*</span>y</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> torch.sin(u)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> v <span class="op">+</span> x<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.log(z),u,v,z</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>output,u,v,z <span class="op">=</span> J(x,y)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"derivative of output wrt u is"</span>,torch.autograd.grad(output,u,retain_graph<span class="op">=</span><span class="va">True</span>)[<span class="dv">0</span>].item())</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"derivative of output wrt v is"</span>,torch.autograd.grad(output,v,retain_graph<span class="op">=</span><span class="va">True</span>)[<span class="dv">0</span>].item())</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"derivative of output wrt z is"</span>,torch.autograd.grad(output,z,retain_graph<span class="op">=</span><span class="va">True</span>)[<span class="dv">0</span>].item())</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"output is"</span>,<span class="bu">round</span>(output.item(),<span class="dv">3</span>),<span class="st">"rounded off to three decimal places"</span>)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"derivative of output wrt x is"</span>,<span class="bu">round</span>(torch.autograd.grad(output,x,retain_graph<span class="op">=</span><span class="va">True</span>)[<span class="dv">0</span>].item(),<span class="dv">2</span>),<span class="st">"rounded off to two decimal places"</span>)</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"derivative of output wrt y is"</span>,<span class="bu">round</span>(torch.autograd.grad(output,y)[<span class="dv">0</span>].item(),<span class="dv">2</span>),<span class="st">"rounded off to two decimal places"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>derivative of output wrt u is 0.20323611795902252
+derivative of output wrt v is 0.3077858090400696
+derivative of output wrt z is 0.3077858090400696
+
+output is 1.178 rounded off to three decimal places
+derivative of output wrt x is 3.06 rounded off to two decimal places
+derivative of output wrt y is 1.22 rounded off to two decimal places</code></pre>
+</div>
+</div>
+<p>The reason automatic differentiation is faster than let’s say symbolic differentiation although they have similar accuracy is because the sole purpose of autodiff is to calculate the numerical value of the derivative by performing underlying primitive operations whose derivative we know for eg derivative of <span class="math inline">\(\sin x\)</span> is <span class="math inline">\(\cos x\)</span>. We simplify the function with the help of different intermediate variables only consisting such primitive operations whose derivative we know. In symbolic differentiation there is the possibility of repeated calculations which lowers it’s efficiency.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

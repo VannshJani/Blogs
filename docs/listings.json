@@ -2,6 +2,8 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/autodiff.html",
+      "/posts/constraints.html",
       "/posts/sirentask/final_notebook.html",
       "/posts/shannonfano/index 2 (2).html",
       "/posts/markov chain/index 2 (1).html",

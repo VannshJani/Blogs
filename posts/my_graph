@@ -1,0 +1,7 @@
+digraph {
+	A [label="Node A" pos="0,0!"]
+	B [label="Node B" pos="2,0!"]
+	C [label="Node C" pos="4,0!"]
+	nodes="A;B" rank=same
+	A -> B [constraint=true]
+}

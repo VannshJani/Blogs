@@ -1,0 +1,7 @@
+digraph {
+	A
+	B
+	A -> B [dir=forward]
+	B -> A [dir=back]
+	A -> B [dir=none]
+}
