@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/mutual.html",
       "/posts/autodiff.html",
       "/posts/constraints.html",
       "/posts/sirentask/final_notebook.html",
