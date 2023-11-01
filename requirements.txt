@@ -4,4 +4,4 @@ pandas
 numpy
 sympy
 matplotlib
-scipyscipy
+scipy
