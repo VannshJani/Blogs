@@ -2,6 +2,8 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/noisy.html",
+      "/posts/MNIST.html",
       "/posts/mutual.html",
       "/posts/autodiff.html",
       "/posts/constraints.html",
