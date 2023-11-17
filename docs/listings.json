@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/image_reconstruction_siren.html",
       "/posts/noisy.html",
       "/posts/MNIST.html",
       "/posts/mutual.html",
