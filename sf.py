@@ -4,14 +4,21 @@ import pandas as pd
 import numpy as np
 import heapq
 
+
+def change():
+    del st.session_state.count
+    del st.session_state.dot
+    del st.session_state.been_parent
+
+
 st.title("Shannon Fano Encoding")
-sentence = st.text_input("Enter text to be encoded",value = "aaaaaaaabbbbccd")
+sentence = st.text_input("Enter text to be encoded",value = "aaaaaaaabbbbccd",on_change=change)
 
 def generate_prob(sentence):
     d={}
     special=0
     for c in sentence:
-        if c=="," or c==".":
+        if c=="," or c=="." or c==" " or c==";":
             special+=1
             continue
         elif c.lower() in d:
@@ -127,6 +134,13 @@ if 'dot' not in st.session_state:
     st.session_state.dot = graphviz.Digraph()
 st.session_state.dot.node(str(symbols[0])+str(" ")+str(prob[0]))
 
+if "been_parent" not in st.session_state:
+    st.session_state.been_parent = {}
+    for symb in symbols:
+        st.session_state.been_parent[symb] = False
+
+
+
 def entropy(data):
     chars = data['Character']
     prob = data['Probability']
@@ -154,7 +168,7 @@ st.write("KL Divergence for Shannon-Fano is ",KL_divergence(cross_entropy(data),
 st.write("---")
 
 
-s = 'aaaaaaaabbbbccd'
+s = sentence
 s = s.lower()
 s_len = 0
 arr = [0]*26
@@ -235,7 +249,8 @@ st.write("Cross entropy for Huffman is ",cross_entropy1)
 st.write("KL Divergence for Huffman is ",cross_entropy1-entropy1)
 st.write("KL Divergence of Huffman is lesser than that of Shannon-Fano")
 st.write("---")
-st.header("Binary Tree")
+
+st.header("Binary Tree for Shannon-Fano")
 if st.button("next",type="primary"):
     st.session_state.count += 1
     if st.session_state.count>=len(symbols):
@@ -244,15 +259,18 @@ if st.button("next",type="primary"):
     else:
         st.session_state.dot.node(str(symbols[st.session_state.count])+str(" ")+str(prob[st.session_state.count]))
         parent = ""
+        
         for i in range(st.session_state.count-1,-1,-1):
                 if symbols[st.session_state.count] in symbols[i]:
                     parent = symbols[i]
                     parent_prob = prob[i]
                     break
-        if st.session_state.count%2==0:
+        if st.session_state.been_parent[parent]:
             label="1"
         else:
             label = "0"
+        if st.session_state.been_parent[parent] == False:
+                st.session_state.been_parent[parent] = True
         st.session_state.dot.edge(str(parent)+str(" ")+str(parent_prob), str(symbols[st.session_state.count])+str(" ")+str(prob[st.session_state.count]),label=label)
             
 st.session_state.dot.save('test.png')
@@ -260,5 +278,4 @@ st.graphviz_chart(st.session_state.dot,use_container_width=True)
 if done:
     del st.session_state.count
     del st.session_state.dot
-
-
+    del st.session_state.been_parent
