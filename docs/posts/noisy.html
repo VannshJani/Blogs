@@ -207,7 +207,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
 <p>Even though the bit probability error is reduced, it could still be significant. There could still be two bits or more flipped in a 3-sized subset in the above example. Increasing the number n will reduce the bit probability error but in doing so we slow down the message. If we define rate as <span class="math inline">\(\text{rate}=\hspace{0.1cm}\frac{\text{length of original string}}{\text{length  of encoded string}}\)</span>. On increasing n, the length of the encoded string increases and so the rate decreases and the message takes more time for transmission.</p>
 <p>Following is a plot of n vs bit probability error.</p>
-<div class="cell" data-execution_count="80">
+<div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> math <span class="im">import</span> factorial <span class="im">as</span> f</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nck(n,k):</span>
@@ -231,31 +231,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>Reduced bit probability error is 0.104</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="81">
+<div class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>n_range <span class="op">=</span> np.arange(<span class="dv">1</span>,<span class="dv">22</span>,<span class="dv">2</span>)</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>rate <span class="op">=</span> <span class="dv">1</span><span class="op">/</span>n_range</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>n_range,rate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="81">
+<div class="cell-output cell-output-display" data-execution_count="2">
 <pre><code>(array([ 1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21]),
  array([1.        , 0.33333333, 0.2       , 0.14285714, 0.11111111,
         0.09090909, 0.07692308, 0.06666667, 0.05882353, 0.05263158,
         0.04761905]))</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="82">
+<div class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>reduced_probability <span class="op">=</span> [bit_probability_error(i,<span class="fl">0.2</span>) <span class="cf">for</span> i <span class="kw">in</span> n_range]</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>reduced_probability <span class="op">=</span> np.array(reduced_probability)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>reduced_probability</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="82">
+<div class="cell-output cell-output-display" data-execution_count="3">
 <pre><code>array([0.2       , 0.104     , 0.05792   , 0.033344  , 0.01958144,
        0.01165421, 0.00700356, 0.00423975, 0.00258146, 0.00157912,
        0.0009697 ])</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="83">
+<div class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>plt.plot(n_range,reduced_probability,marker<span class="op">=</span><span class="st">'o'</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"n vs bit probability error"</span>)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"n"</span>)</span>
@@ -267,10 +267,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Let’s also plot rate vs bit probability error</p>
-<div class="cell" data-execution_count="100">
+<div class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.interpolate <span class="im">import</span> interp1d</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>interp <span class="op">=</span> interp1d(rate, reduced_probability, kind<span class="op">=</span><span class="st">'cubic'</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>interp <span class="op">=</span> interp1d(rate, reduced_probability, kind<span class="op">=</span><span class="st">'quadratic'</span>)</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>fine_rate <span class="op">=</span> np.linspace(rate.<span class="bu">min</span>(), rate.<span class="bu">max</span>(), <span class="dv">5000</span>)</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>smooth_reduced_probability <span class="op">=</span> interp(fine_rate)</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>))</span>
@@ -303,7 +303,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 \end{cases}
 \]</span></p>
 <p>Following is the plot for the same.</p>
-<div class="cell" data-execution_count="156">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> channel_capacity(p):</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">1</span> <span class="op">-</span> (p<span class="op">*</span>np.log2(<span class="dv">1</span><span class="op">/</span>p) <span class="op">+</span> (<span class="dv">1</span><span class="op">-</span>p)<span class="op">*</span>np.log2(<span class="dv">1</span><span class="op">/</span><span class="dv">1</span><span class="op">-</span>p))</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
