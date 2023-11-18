@@ -95,7 +95,7 @@ else:
     rate = 1/n_range
     reduced_probability = [bit_probability_error(i,bit_prob) for i in n_range]
     reduced_probability = np.array(reduced_probability)
-    interp = interp1d(rate, reduced_probability, kind='cubic')
+    interp = interp1d(rate, reduced_probability, kind='quadratic')
     fine_rate = np.linspace(rate.min(), rate.max(), 5000)
     smooth_reduced_probability = interp(fine_rate)
     ax.plot(fine_rate, smooth_reduced_probability, color='b')
