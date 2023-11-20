@@ -4,6 +4,7 @@ import math
 import matplotlib.pyplot as plt
 from sympy import symbols, diff, evalf, sin,exp
 from mpl_toolkits import mplot3d
+import torch
 
 
 st.title("Approximating univariate functions using Taylor series")
@@ -72,10 +73,34 @@ y1 = np.linspace(-4,4,100)
 X,Y = symbols(["X","Y"])
 
 
-def partial_derivative(expr,a1,b1,var,n1):
-    dz_dx = diff(expr,var,n1)  # Differentiating expr with respect to var
-    evaluated = dz_dx.evalf(subs={X:a1,Y:b1})
-    return evaluated
+# def partial_derivative(expr,a1,b1,var,n1):
+#     dz_dx = diff(expr,var,n1)  # Differentiating expr with respect to var
+#     evaluated = dz_dx.evalf(subs={X:a1,Y:b1})
+#     return evaluated
+def partial_derivative(expr, a1, b1, var, n1):
+    X = torch.tensor(a1, requires_grad=True)
+    Y = torch.tensor(b1, requires_grad=True)
+    if var == 'X':
+        z = expr.subs('X', X).subs('Y', Y)
+    elif var == 'Y':
+        z = expr.subs('Y', Y).subs('X', X)
+    else:
+        raise ValueError("var should be 'X' or 'Y'")
+
+    for _ in range(n1):
+        if var == 'X':
+            dz_dx = torch.autograd.grad(z, X)[0]
+        else:
+            dz_dx = torch.autograd.grad(z, Y)[0]
+        z = dz_dx
+
+    if var == 'X':
+        result = dz_dx.subs('X', a1).subs('Y', b1)
+    else:
+        result = dz_dx.subs('Y', b1).subs('X', a1)
+
+    return result.item() if isinstance(result, torch.Tensor) else result
+
 
 def taylor_approx_2D(expr,a1,b1,n1,xi,yi):
     ans = expr.evalf(subs={X:a1,Y:b1})
