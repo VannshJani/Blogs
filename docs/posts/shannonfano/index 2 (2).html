@@ -200,7 +200,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>We repeat steps 3 and 4 by splitting each section into left and right sections and assigning the binary digits ‘0’ and ‘1’ to them unitl each section is left with just one symbol(analogous to leaf node of binary tree).</li>
 </ol>
 <p>Let’s better understand shannon-fano and visualize it using examples. We’ll encode the characters of the following sentence.</p>
-<p><strong>“In the tranquil stillness of the early morning, birdsong filled the air as the first rays of sunlight painted the horizon with hues of pink and orange, creating a breathtakingly beautiful scene that seemed to belong to a world untouched by time.”</strong></p>
+<p><strong>“aaaaaaaabbbbccd”</strong></p>
 <p>Let’s first calculate the probability of each character in the above statement, and sort them based on probabilities in descending order.</p>
 <div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>sentence <span class="op">=</span> <span class="st">"aaaaaaaabbbbccd"</span></span>

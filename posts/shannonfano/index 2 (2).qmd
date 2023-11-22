@@ -22,7 +22,7 @@ For eg, it would make more sense to assign symbols or characters occuring more f
 
 Let's better understand shannon-fano and visualize it using examples. We'll encode the characters of the following sentence.
 
-**"In the tranquil stillness of the early morning, birdsong filled the air as the first rays of sunlight painted the horizon with hues of pink and orange, creating a breathtakingly beautiful scene that seemed to belong to a world untouched by time."**
+**"aaaaaaaabbbbccd"**
 
 Let's first calculate the probability of each character in the above statement, and sort them based on probabilities in descending order.
 
