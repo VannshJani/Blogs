@@ -52,7 +52,7 @@ d
 
 We create nodes for the sequence and build a tree following the top to bottom approach.
 
-Since we want the splits to have similar total probabilities, we can assign '0' and '1' alternatively on the descended probability sequence or we can create the left subset until the probabilities of all the subsets approximately reach half of the total probability value.
+Since we want the splits to have similar total probabilities,we can create the left subset until the probabilities of all the subsets approximately reach half of the total probability value. We will assign '0' to the left subset and '1' to the right subset.
 
 ```{python}
 class Node:
